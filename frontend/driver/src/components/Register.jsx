@@ -36,7 +36,7 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }) {
             const data = await response.json();
 
             if (data.success) {
-                alert('Registration successful! Please login.');
+                // Auto login after register would be better, but for now just callback
                 onRegisterSuccess();
             } else {
                 setError(data.error || 'Registration failed');
@@ -49,58 +49,69 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }) {
     };
 
     return (
-        <div className="auth-container">
-            <h2>Driver Registration</h2>
+        <div className="auth-container premium-card">
+            <div className="brand-header">
+                <h1>Wasalny</h1>
+                <p className="subtitle">Driver Registration</p>
+            </div>
+
             {error && <div className="error-message">{error}</div>}
-            <form onSubmit={handleSubmit}>
+
+            <form onSubmit={handleSubmit} className="premium-form">
                 <div className="form-group">
-                    <label>Full Name</label>
+                    <label className="input-label">Full Name</label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
                         placeholder="Enter your full name"
+                        className="premium-input"
                     />
                 </div>
                 <div className="form-group">
-                    <label>Phone Number</label>
+                    <label className="input-label">Phone Number</label>
                     <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
                         placeholder="Enter your phone number"
+                        className="premium-input"
                     />
                 </div>
                 <div className="form-group">
-                    <label>Password</label>
+                    <label className="input-label">Password</label>
                     <input
                         type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
                         placeholder="Create a password"
+                        className="premium-input"
                     />
                 </div>
                 <div className="form-group">
-                    <label>Confirm Password</label>
+                    <label className="input-label">Confirm Password</label>
                     <input
                         type="password"
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         required
                         placeholder="Confirm your password"
+                        className="premium-input"
                     />
                 </div>
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Registering...' : 'Register'}
+
+                <button type="submit" disabled={loading} className="premium-button">
+                    {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
             </form>
-            <p className="switch-auth">
-                Already have an account?
+
+            <div className="auth-footer">
+                <p>Already have an account?</p>
                 <button onClick={onSwitchToLogin} className="link-button">Login here</button>
-            </p>
+            </div>
         </div>
     );
 }

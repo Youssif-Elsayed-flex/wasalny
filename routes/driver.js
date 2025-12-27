@@ -181,4 +181,57 @@ router.get('/profile/:id', async (req, res) => {
     }
 });
 
+// Get Active Routes
+router.get('/routes', async (req, res) => {
+    try {
+        const routes = await query(
+            'SELECT * FROM routes WHERE status = "active" ORDER BY name ASC'
+        );
+        res.json({ success: true, routes });
+    } catch (error) {
+        console.error('Get routes error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Assign Route (Create/Update Vehicle)
+router.post('/assign-route', async (req, res) => {
+    try {
+        const { driver_id, route_id, plate_number } = req.body;
+
+        if (!driver_id || !route_id || !plate_number) {
+            return res.status(400).json({ error: 'Driver ID, Route ID, and Plate Number are required' });
+        }
+
+        // Check if driver already has a vehicle
+        const existingVehicle = await query(
+            'SELECT id FROM vehicles WHERE driver_id = ?',
+            [driver_id]
+        );
+
+        if (existingVehicle.length > 0) {
+            // Update existing vehicle
+            await query(
+                'UPDATE vehicles SET route_id = ?, plate_number = ? WHERE driver_id = ?',
+                [route_id, plate_number, driver_id]
+            );
+        } else {
+            // Create new vehicle
+            await query(
+                'INSERT INTO vehicles (driver_id, route_id, plate_number, status) VALUES (?, ?, ?, ?)',
+                [driver_id, route_id, plate_number, 'inactive']
+            );
+        }
+
+        res.json({ success: true, message: 'Route assigned successfully' });
+
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ error: 'Plate number already exists' });
+        }
+        console.error('Assign route error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 module.exports = router;

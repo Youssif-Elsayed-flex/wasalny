@@ -25,7 +25,7 @@ export default function Login({ onLogin, onSwitchToRegister }) {
             const data = await response.json();
 
             if (data.success) {
-                onLogin(data.token, data.driver);
+                onLogin(data.token, data.driver, data.vehicle);
             } else {
                 setError(data.error || 'Login failed');
             }
@@ -37,38 +37,47 @@ export default function Login({ onLogin, onSwitchToRegister }) {
     };
 
     return (
-        <div className="auth-container">
-            <h2>Driver Login</h2>
+        <div className="auth-container premium-card">
+            <div className="brand-header">
+                <h1>Wasalny</h1>
+                <p className="subtitle">Driver Login</p>
+            </div>
+
             {error && <div className="error-message">{error}</div>}
-            <form onSubmit={handleSubmit}>
+
+            <form onSubmit={handleSubmit} className="premium-form">
                 <div className="form-group">
-                    <label>Phone Number</label>
+                    <label className="input-label">Phone Number</label>
                     <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
                         placeholder="Enter your phone number"
+                        className="premium-input"
                     />
                 </div>
                 <div className="form-group">
-                    <label>Password</label>
+                    <label className="input-label">Password</label>
                     <input
                         type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
                         placeholder="Enter your password"
+                        className="premium-input"
                     />
                 </div>
-                <button type="submit" disabled={loading}>
+
+                <button type="submit" disabled={loading} className="premium-button">
                     {loading ? 'Logging in...' : 'Login'}
                 </button>
             </form>
-            <p className="switch-auth">
-                Don't have an account?
-                <button onClick={onSwitchToRegister} className="link-button">Register here</button>
-            </p>
+
+            <div className="auth-footer">
+                <p>New to Wasalny?</p>
+                <button onClick={onSwitchToRegister} className="link-button">Create Account</button>
+            </div>
         </div>
     );
 }
