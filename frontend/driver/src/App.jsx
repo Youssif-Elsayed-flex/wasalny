@@ -3,6 +3,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
 import RouteSelection from './components/RouteSelection'
+import Navbar from './components/Navbar'
 import './App.css'
 
 function App() {
@@ -15,9 +16,9 @@ function App() {
 
   useEffect(() => {
     if (token && driver) {
-      if (vehicle) {
+      if (vehicle && view !== 'route-selection') { // Don't redirect to dashboard if explicitly selecting route
         setView('dashboard');
-      } else {
+      } else if (!vehicle) {
         setView('route-selection');
       }
     } else {
@@ -47,18 +48,31 @@ function App() {
     setView('login');
   };
 
-  const handleRouteSelected = () => {
-    // Refresh vehicle info or just set a flag. 
-    // Ideally we fetch the vehicle info again, but for now let's assume success means we are good.
-    // We can simulate vehicle object to proceed.
-    const newVehicle = { status: 'inactive' }; // details irrelevant for now, just need existence
-    localStorage.setItem('vehicleInfo', JSON.stringify(newVehicle));
-    setVehicle(newVehicle);
+  const handleRouteSelected = (updatedVehicle) => {
+    if (updatedVehicle) {
+      localStorage.setItem('vehicleInfo', JSON.stringify(updatedVehicle));
+      setVehicle(updatedVehicle);
+    }
     setView('dashboard');
   };
 
+  const handleChangeRoute = () => {
+    setView('route-selection');
+  };
+
+  // Views where we want the Navbar
+  const showNavbar = token && driver && (view === 'dashboard' || view === 'route-selection');
+
   return (
     <div className="app-container">
+      {showNavbar && (
+        <Navbar
+          driver={driver}
+          onLogout={handleLogout}
+          onChangeRoute={handleChangeRoute}
+        />
+      )}
+
       {view === 'login' && (
         <Login
           onLogin={handleLogin}
@@ -86,7 +100,6 @@ function App() {
           driver={driver}
           vehicle={vehicle}
           token={token}
-          onLogout={handleLogout}
         />
       )}
     </div>

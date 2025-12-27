@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function Dashboard({ driver, vehicle, token, onLogout }) {
+export default function Dashboard({ driver, vehicle, token }) {
     const [status, setStatus] = useState(driver.status);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -40,16 +40,6 @@ export default function Dashboard({ driver, vehicle, token, onLogout }) {
 
     return (
         <div className="dashboard-container premium-card">
-            <div className="dashboard-header">
-                <div className="header-info">
-                    <h1>{driver.name}</h1>
-                    <span className="driver-id">ID: {driver.id}</span>
-                </div>
-                <button onClick={onLogout} className="logout-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                </button>
-            </div>
-
             <div className="status-section">
                 <div className={`status-display ${status}`}>
                     {status === 'active' ? 'ONLINE' : 'OFFLINE'}
@@ -68,13 +58,23 @@ export default function Dashboard({ driver, vehicle, token, onLogout }) {
 
             <div className="info-grid">
                 <div className="info-item">
+                    <span className="label">Driver ID</span>
+                    <span className="value">{driver.id}</span>
+                </div>
+                <div className="info-item">
                     <span className="label">Phone</span>
                     <span className="value">{driver.phone}</span>
                 </div>
                 {vehicle && (
                     <div className="info-item">
-                        <span className="label">Plate Number</span>
+                        <span className="label">Plate</span>
                         <span className="value">{vehicle.plate_number || 'N/A'}</span>
+                    </div>
+                )}
+                {vehicle && vehicle.route_name && (
+                    <div className="info-item">
+                        <span className="label">Route</span>
+                        <span className="value">{vehicle.route_name}</span>
                     </div>
                 )}
             </div>

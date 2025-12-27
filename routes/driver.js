@@ -209,6 +209,7 @@ router.post('/assign-route', async (req, res) => {
             [driver_id]
         );
 
+        // ... existing query ...
         if (existingVehicle.length > 0) {
             // Update existing vehicle
             await query(
@@ -223,9 +224,20 @@ router.post('/assign-route', async (req, res) => {
             );
         }
 
-        res.json({ success: true, message: 'Route assigned successfully' });
+        // Get updated/created vehicle info
+        const updatedVehicle = await query(
+            'SELECT v.*, r.name as route_name FROM vehicles v LEFT JOIN routes r ON v.route_id = r.id WHERE v.driver_id = ?',
+            [driver_id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Route assigned successfully',
+            vehicle: updatedVehicle[0]
+        });
 
     } catch (error) {
+
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: 'Plate number already exists' });
         }

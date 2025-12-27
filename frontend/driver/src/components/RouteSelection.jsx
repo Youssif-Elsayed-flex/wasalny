@@ -45,7 +45,7 @@ export default function RouteSelection({ driver, token, onRouteSelected }) {
             const data = await response.json();
 
             if (data.success) {
-                onRouteSelected();
+                onRouteSelected(data.vehicle);
             } else {
                 setError(data.error || 'Failed to assign route');
             }
