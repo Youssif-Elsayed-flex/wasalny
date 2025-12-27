@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="wasalny">وصلني</title>
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/driver-register.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="card-header">
+                <a href="/" class="back-link" data-i18n="back_to_home">← العودة للرئيسية</a>
+                <div class="logo">
+                    <span class="logo-icon">🚍</span>
+                    <h1 class="logo-text" data-i18n="wasalny">وصلني</h1>
+                </div>
+                <h2 class="card-title" data-i18n="register_new_driver">تسجيل سائق جديد</h2>
+                <p class="card-subtitle" data-i18n="join_network">انضم إلى شبكة وصلني وابدأ في خدمة الركاب</p>
+            </div>
+
+            <div id="successMessage" class="success-message" style="display: none;">
+                ✅ تم التسجيل بنجاح! سيتم مراجعة طلبك قريباً
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <form id="driverRegistrationForm" class="registration-form">
+                <div class="form-section">
+                    <h3 class="section-title">📋 البيانات الشخصية</h3>
+
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="full_name">الاسم الكامل *</label>
+                        <input type="text" id="name" class="form-input" data-i18n-placeholder="name_placeholder"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف *</label>
+                        <input type="tel" id="phone" class="form-input" placeholder="01234567890" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور *</label>
+                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">تأكيد كلمة المرور *</label>
+                        <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">🚗 معلومات العربية (اختياري)</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">رقم اللوحة</label>
+                        <input type="text" id="plateNumber" class="form-input" placeholder="ن ع م 1234">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">الخط المفضل</label>
+                        <select id="preferredRoute" class="form-input">
+                            <option value="">اختر الخط</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-terms">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" required>
+                        <span>أوافق على الشروط والأحكام</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <span class="btn-text">تسجيل الآن</span>
+                    <span class="btn-loading" style="display: none;">⏳ جاري التسجيل...</span>
+                </button>
+            </form>
+
+            <div class="login-link">
+                <p>لديك حساب بالفعل؟ <a href="/driver">تسجيل الدخول</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        // Load routes
+        async function loadRoutes() {
+            try {
+                const response = await fetch(`${API_BASE}/routes`);
+                const data = await response.json();
+                if (data.success) {
+                    const select = document.getElementById('preferredRoute');
+                    data.routes.forEach(route => {
+                        const option = document.createElement('option');
+                        option.value = route.id;
+                        option.textContent = route.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading routes:', error);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('driverRegistrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const plateNumber = document.getElementById('plateNumber').value;
+            const preferredRoute = document.getElementById('preferredRoute').value;
+
+            // Validation
+            if (password !== confirmPassword) {
+                showError('كلمتا المرور غير متطابقتين');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                return;
+            }
+
+            // Show loading
+            const btnText = document.querySelector('.btn-text');
+            const btnLoading = document.querySelector('.btn-loading');
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+
+            try {
+                // Register driver
+                const response = await fetch(`${API_BASE}/driver/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // If vehicle info provided, create vehicle
+                    if (plateNumber) {
+                        await fetch(`${API_BASE}/admin/vehicles`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                plate_number: plateNumber,
+                                driver_id: data.driver_id,
+                                route_id: preferredRoute || null
+                            })
+                        });
+                    }
+
+                    showSuccess();
+                    document.getElementById('driverRegistrationForm').reset();
+
+                    // Redirect after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '/driver';
+                    }, 3000);
+                } else {
+                    showError(data.error || 'حدث خطأ أثناء التسجيل');
+                }
+            } catch (error) {
+                showError('خطأ في الاتصال بالخادم');
+            } finally {
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess() {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Load routes on page load
+        loadRoutes();
+    </script>
+    <!-- Theme & Language Manager -->
+    <script src="/js/theme-manager.js"></script>
+</body>
+
+</html>
